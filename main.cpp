@@ -37,26 +37,28 @@ int main() {
     int iter = 1000000;
     for (int it = 0; it < iter; ++it) {
         #pragma omp parallel for
-        for (int i = 0; i < N; i+=2) {
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            int I = 2 * i;
             int j = rand_col(gen);
             int spin_sum = 0;
             for (int d = 0; d < 4; ++d) {
-                spin_sum += S[(i + dx[d] + N) % N][(j + dy[d] + N) % N];
+                spin_sum += S[(I + dx[d] + N) % N][(I + dy[d] + N) % N];
             }
-            int dU = 2 * spin_sum * S[i][j];
-            if (dU <= 0) S[i][j] *= -1;
-            else if (exp(-dU / T) > prob(gen)) S[i][j] *= -1;
+            int dU = 2 * spin_sum * S[I][j];
+            if (dU <= 0) S[I][j] *= -1;
+            else if (exp(-dU / T) > prob(gen)) S[I][j] *= -1;
         }
         #pragma omp parallel for
-        for (int i = 1; i < N; i+=2) {
+        for (int i = 0; i < N / 2; ++i) {
+            int I = 2 * i + 1;
             int j = rand_col(gen);
             int spin_sum = 0;
             for (int d = 0; d < 4; ++d) {
-                spin_sum += S[(i + dx[d] + N) % N][(j + dy[d] + N) % N];
+                spin_sum += S[(I + dx[d] + N) % N][(I + dy[d] + N) % N];
             }
-            int dU = 2 * spin_sum * S[i][j];
-            if (dU <= 0) S[i][j] *= -1;
-            else if (exp(-dU / T) > prob(gen)) S[i][j] *= -1;
+            int dU = 2 * spin_sum * S[I][j];
+            if (dU <= 0) S[I][j] *= -1;
+            else if (exp(-dU / T) > prob(gen)) S[I][j] *= -1;
         }
     }
     
