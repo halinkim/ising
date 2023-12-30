@@ -1,0 +1,5 @@
+N = 100
+T = 1.5
+iter = 1000
+out_path = 'simulation/isingAnim/'
+out_every = 10

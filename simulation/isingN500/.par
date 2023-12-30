@@ -1,0 +1,5 @@
+N = 500
+T = 2
+iter = 1000
+out_path = 'simulation/isingN500/'
+out_every = 10

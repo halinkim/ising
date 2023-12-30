@@ -1,0 +1,5 @@
+N = 100
+T = 2.7
+iter = 1000
+out_path = 'simulation/isingomp/'
+out_every = 100
