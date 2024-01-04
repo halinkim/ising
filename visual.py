@@ -31,29 +31,55 @@ if "iter" in par_map:
     max_iter = round(par_map["iter"])
 else:
     max_iter = 100
+if "out_lattice" in par_map:
+    out_lattice = round(par_map["out_lattice"])
+else:
+    out_lattice = 1
+
 
 os.makedirs(path + 'img', exist_ok=True)
 
-its = [i * out_every for i in range(max_iter // out_every + 1)]
+if out_lattice:
+    its = [i * out_every for i in range(max_iter // out_every + 1)]
+    import matplotlib.animation as animation
+    fig, ax = plt.subplots()
+    ims = []
+    for it in its:
+        sys.stdin = open(path + 'data/data_it%d.out' % it, 'r')
+        N = int(sys.stdin.readline())
+        LATTICE = [[*map(int, sys.stdin.readline().split())] for _ in range(N)]
+        im = ax.matshow(LATTICE)
+        ax.set_title('N=%d, T=%f, iter=%d' % (N, T, it))
+        ims.append([im])
+        fig.savefig(path + 'img/img_N%d_T%.2f_it%d.png' % (N, T, it), dpi=300)
+        # plt.matshow(LATTICE)
+        # plt.title('N=%d, T=%f, iter=%d' % (N, T, it))
+        # plt.savefig(path + 'img/img_N%d_T%.2f_it%d.png' % (N, T, it), dpi=300)
 
-
-import matplotlib.animation as animation
-fig, ax = plt.subplots()
-ims = []
-for it in its:
+        print("Save fig it%d / %d" % (it, its[-1]))
+    # plt.show()
+    ani = animation.ArtistAnimation(fig, ims, interval=100)
+    ani.save(path + 'img/anim_N%d_T%.2f.mp4' % (N, T),  dpi=300)
+else:
+    fig, ax = plt.subplots()
+    it = max_iter
     sys.stdin = open(path + 'data/data_it%d.out' % it, 'r')
     N = int(sys.stdin.readline())
     LATTICE = [[*map(int, sys.stdin.readline().split())] for _ in range(N)]
-    im = ax.matshow(LATTICE)
+    ax.matshow(LATTICE)
     ax.set_title('N=%d, T=%f, iter=%d' % (N, T, it))
-    ims.append([im])
     fig.savefig(path + 'img/img_N%d_T%.2f_it%d.png' % (N, T, it), dpi=300)
-    # plt.matshow(LATTICE)
-    # plt.title('N=%d, T=%f, iter=%d' % (N, T, it))
-    # plt.savefig(path + 'img/img_N%d_T%.2f_it%d.png' % (N, T, it), dpi=300)
+energy = []
+with open(path + 'data/energy.out', 'r') as inf:
+    for ln in inf:
+        it, E = map(int, ln.split())
+        energy.append(E)
+fig, ax = plt.subplots()
+ax.plot(energy)
+ax.set_xlabel('iter')
+ax.set_ylabel('energy')
+ax.grid()
+ax.set_title('N=%d, T=%f' % (N, T))
+fig.savefig(path + 'img/energy_N%d_T%.2f.png' % (N, T),  dpi=300)
 
-    print("Save fig it%d / %d" % (it, its[-1]))
-# plt.show()
-ani = animation.ArtistAnimation(fig, ims, interval=100)
-ani.save(path + 'img/anim_N%d_T%.2f.mp4' % (N, T),  dpi=300)
 

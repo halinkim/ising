@@ -46,8 +46,11 @@ int dy[4] = {1, -1, 0, 0};
 int **S;
 int N;
 double T;
+int E;
+int *E_his;
 int iter;
 int out_every;
+int out_lattice;
 string out_path = "simulation/ising/";
 
 void parse_parameter(const string &pathname) {
@@ -103,6 +106,12 @@ void parse_parameter(const string &pathname) {
     else {
         iter = 100;
     }
+    if (par_map.find("out_lattice") != par_map.end()) {
+        out_lattice = round(par_map["out_lattice"]);
+    }
+    else {
+        out_lattice = 1;
+    }
     // if (par_map_string.find("par_path") != par_map_string.end()) {
     //     par_path = par_map_string["par_path"];
     // }
@@ -122,6 +131,7 @@ void parse_parameter(const string &pathname) {
     fout << "iter = " << iter << "\n";
     fout << "out_path = '" << out_path << "'\n";
     fout << "out_every = " << out_every << "\n";
+    fout << "out_lattice = " << out_lattice << "\n";
     fout.close();
 }
 
@@ -134,6 +144,14 @@ void print_lattice(int it) {
             fout << S[i][j] << " ";
         }
         fout << "\n";
+    }
+    fout.close();
+}
+void print_E() {
+    ofstream fout;
+    fout.open(out_path + "data/energy.out");
+    for (int i = 0; i <= iter; ++i) {
+        fout << i << " " << E_his[i] << "\n";
     }
     fout.close();
 }
@@ -155,14 +173,26 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < N; ++i) {
         S[i] = new int[N];
     }
+    E_his = new int[iter + 1];
 
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             S[i][j] = 2 * rand_spin(gen) - 1;
         }
     }
+
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            int spin_sum = 0;
+            for (int d = 0; d < 4; ++d) {
+                spin_sum += S[(i + dx[d] + N) % N][(j + dy[d] + N) % N];
+            }
+            E += -S[i][j] * spin_sum;
+        }
+    }
     
     print_lattice(0);
+    E_his[0] = E;
     for (int it = 1; it <= iter; ++it) {
         for (int _it = N * N; _it > 0; --_it) {
             int I = rand_col(gen);
@@ -172,14 +202,21 @@ int main(int argc, char* argv[]) {
                 spin_sum += S[(I + dx[d] + N) % N][(j + dy[d] + N) % N];
             }
             int dU = 2 * spin_sum * S[I][j];
-            if (dU <= 0) S[I][j] *= -1;
-            else if (exp(-dU / T) > prob(gen)) S[I][j] *= -1;
+            if (dU <= 0) {
+                S[I][j] *= -1;
+                E += dU;
+            }
+            else if (exp(-dU / T) > prob(gen)) {
+                S[I][j] *= -1;
+                E += dU;
+            }
         }
         if (it % out_every == 0) {
             print_lattice(it);
         }
+        E_his[it] = E;
     }
-    
+    print_E();
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();

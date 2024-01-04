@@ -1,0 +1,6 @@
+N = 100
+T = 10
+iter = 10000
+out_path = 'simulation/isingN100T2.3/'
+out_every = 100
+out_lattice = 0

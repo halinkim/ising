@@ -1,5 +1,5 @@
-N = 500
+N = 100
 T = 2
 iter = 1000
 out_path = 'simulation/isingN500_NOOUT/'
-out_every = 1000
+out_every = 100
